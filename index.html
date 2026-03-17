@@ -32,18 +32,67 @@
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Managed Contract Pricing Calculator</h1>
-    <p>
-      Proof of concept for a managed services pricing calculator.
-    </p>
+  <div class="calc-box">
 
-    <div class="calc-box">
-      <!-- Paste your Calconic embed code below this line -->
-      <!-- Example:
-      <iframe src="YOUR_CALCONIC_URL" width="100%" height="800" frameborder="0"></iframe>
-      -->
-    </div>
+  <iframe 
+    src="https://app.calconic.com/api/embed/calculator/69b8ccb8112bb9002d3e2121"
+    sandbox="allow-same-origin allow-forms allow-scripts allow-top-navigation allow-popups-to-escape-sandbox allow-popups"
+    title="Calconic Calculator"
+    name="Calconic Calculator"
+    height="840px"
+    scrolling="no"
+    style="width: 100%; border: 0; outline: none;">
+  </iframe>
+
+  <script>
+  (function() {
+    function inViewport(element) {
+      var m = 100;
+      var w = window;
+      var r = element.getBoundingClientRect();
+      var wB = w.innerHeight;
+      var wR = w.innerWidth;
+      return (
+        (0 <= r.top && wB - m >= r.top) ||
+        (0 >= r.top && wB <= r.bottom) ||
+        (m <= r.bottom && wB >= r.bottom)
+      ) && (
+        (0 <= r.left && wR - m >= r.left) ||
+        (0 >= r.left && wR <= r.right) ||
+        (m <= r.right && wR >= r.right)
+      );
+    }
+
+    var iframes = [];
+
+    window.addEventListener("message", function(t) {
+      if (t.data && "CALCONIC_UPDATE_HEIGHT" === t.data.action) {
+        var l = document.querySelectorAll(
+          'iframe[src="https://app.calconic.com/api/embed/calculator/' + t.data.payload.id + '"]'
+        );
+
+        for (let i in [...l]) {
+          l[i].height = t.data.payload.height;
+
+          if (!iframes.includes(l[i])) {
+            iframes.push(l[i]);
+
+            let intervalId = setInterval(function() {
+              l[i].contentWindow.postMessage({ action: 'IS_ACTIVE' }, '*');
+
+              if (inViewport(l[i])) {
+                clearInterval(intervalId);
+                l[i].contentWindow.postMessage({ action: 'IN_VIEWPORT' }, '*');
+              }
+            }, 200);
+          }
+        }
+      }
+    });
+  })();
+  </script>
+
+</div>
   </div>
 </body>
 </html>
